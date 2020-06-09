@@ -1,0 +1,6 @@
+rootProject.name = 'CardGame-Whist'
+include 'Model'
+include 'Persistance'
+include 'Services'
+include 'Server'
+
