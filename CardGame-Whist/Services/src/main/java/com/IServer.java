@@ -1,14 +1,12 @@
 package com;
 
-import com.dto.GameData;
-
 public interface IServer {
 
-    Player login(String nickname, ClientObserver client) throws AppException;
-    void logout(String nickname) throws AppException;
+    Player login(String nickname, IClientObserver client) throws AppException;
+    void logout(Player player) throws AppException;
 
 
-    void markAsActive() throws AppException;
+    void markAsActive(Player player) throws AppException;
     void startGame() throws AppException;
 
 

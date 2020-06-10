@@ -3,4 +3,5 @@ include 'Model'
 include 'Persistance'
 include 'Services'
 include 'Server'
+include 'ClientFX'
 
