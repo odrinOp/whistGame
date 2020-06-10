@@ -13,7 +13,7 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <Button fx:id="startBtn" layoutX="274.0" layoutY="318.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="79.0" text="Start">
+      <Button fx:id="startBtn" layoutX="274.0" layoutY="318.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="79.0" style="-fx-background-color: green;" text="Start" textFill="WHITE">
          <font>
             <Font size="14.0" />
          </font>
@@ -26,6 +26,11 @@
       <Label layoutX="314.0" layoutY="70.0" text="Pending">
          <font>
             <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="hostTxt" layoutX="28.0" layoutY="33.0" text="Host: Player X">
+         <font>
+            <Font size="18.0" />
          </font>
       </Label>
    </children>

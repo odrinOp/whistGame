@@ -50,7 +50,7 @@ public class GameEngine implements IServer {
         LobbyData lobbyData = (LobbyData) createGameData("lobby");
         notifyPlayers(lobbyData);
 
-        System.out.println("Client logged in... nickame: " + nickname + " isHost: " + localPlayer.isHost());
+        System.out.println("Client logged in... nickname: " + nickname + " isHost: " + localPlayer.isHost());
 
         return localPlayer;
 
@@ -111,11 +111,45 @@ public class GameEngine implements IServer {
         //verify if the player is currently logged in
         if(activePlayers.get(player) == null)
             throw new AppException("You are not currently logged in!\nThis error shouldn't happen!\nCheck server!");
+        //if we are in lobby, we just remove the player
+        switch (state){
+            case ACTIVE:
+                activePlayers.remove(player);
+                if(player.isHost()) {
+                    System.out.println("The host " + player.getNickname() + " has left lobby.Choosing another host...");
+                    changeHost();
+                }
+                LobbyData data = (LobbyData) createGameData("lobby");
+                notifyPlayers(data);
+                break;
+
+            case PLAY:
+                break;
+
+            case COMPLETE:
+                break;
+
+            case CANCELED:
+                break;
+
+            default:
+                break;
+        }
+
 
         //todo: if the game is currently in play, we want to end the game and show the score;
         activePlayers.remove(player);
-        System.out.println("Client logged out... nickame: " + player.getNickname() );
+        System.out.println("Client logged out... nickname: " + player.getNickname() );
 
+    }
+
+    private void changeHost() {
+        for(Player player : activePlayers.keySet()) {
+            player.setHost(true);
+            player.setReady(true);
+            System.out.println("Player " + player.getNickname() + " is the new host!");
+            return;
+        }
     }
 
     @Override

@@ -2,8 +2,10 @@ package com;
 
 import com.dto.GameData;
 import com.dto.LobbyData;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 
 import java.rmi.RemoteException;
@@ -11,8 +13,9 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class LobbyController extends UnicastRemoteObject implements IClientObserver {
 
-    private IServer server;
-    private Player player;
+
+
+    private MainController mainController;
 
     @FXML
     private ListView<String> readyList;
@@ -22,6 +25,9 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
     private Button readyBtn;
     @FXML
     private Button startBtn;
+    @FXML
+    private Label hostTxt;
+
 
 
     public LobbyController() throws RemoteException {
@@ -29,20 +35,42 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
 
     @Override
     public void update(GameData data) throws RemoteException {
-        if(data instanceof LobbyData){
-            LobbyData lobbyData = (LobbyData) data;
-            updateReadyList(lobbyData.getPlayers());
-            updatePendingList(lobbyData.getPlayers());
-            updateButtons();
+
+
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    if(data instanceof LobbyData){
+                    LobbyData lobbyData = (LobbyData) data;
+                    updateHost(lobbyData.getPlayers());
+                    updateReadyList(lobbyData.getPlayers());
+                    updatePendingList(lobbyData.getPlayers());
+                    updateButtons();
+                }}
+            });
+
+
+    }
+
+    private void updateHost(Player[] players) {
+        for(Player player : players)
+        if(player.isHost()){
+            hostTxt.setText("Host: " + player.getNickname());
+            if(player.equals(mainController.getPlayer())){
+                mainController.setPlayer(player);
+            }
         }
     }
 
     private void updateButtons() {
-        readyBtn.setDisable(player.isReady());
+        readyBtn.setDisable(mainController.getPlayer().isReady());
 
-        if(everyoneReady() && player.isHost()){
+        if(everyoneReady() && mainController.getPlayer().isHost()){
             startBtn.setDisable(false);
         }
+
+
+
     }
 
     private boolean everyoneReady() {
@@ -52,6 +80,7 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
     private void updatePendingList(Player[] players) {
         pendingList.getItems().clear();
         for(Player player: players){
+
             if (!player.isReady())
                 pendingList.getItems().add(player.getNickname());
         }
@@ -67,25 +96,22 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
 
     public void initState() {
         startBtn.setDisable(true);
-        if(player.isReady())
+        if(mainController.getPlayer().isReady())
             readyBtn.setDisable(true);
     }
 
-    public void setServer(IServer server) {
-        this.server = server;
-    }
 
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
 
     @FXML
     private void markAsActive(){
         try {
-            server.markAsActive(player);
-            player.setReady(true);
+            mainController.markAsReady();
         } catch (AppException appException) {
             appException.printStackTrace();
         }
+    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
     }
 }

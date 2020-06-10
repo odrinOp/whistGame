@@ -1,11 +1,13 @@
 package com;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -13,50 +15,43 @@ import javafx.stage.WindowEvent;
 
 public class LoginController {
 
-    private IServer server;
 
-    private LobbyController lobbyController;
-    private Parent lobbyView;
 
-    //FXML BUTTONS
+
+    private MainController mainController;
+
+    //FXML CONTROLS
     @FXML
     private TextField nicknameTxt;
+    @FXML
+    private Label errorMessage;
 
     @FXML
     void login(ActionEvent e){
         try {
+            initData();
             validateData();
             String nickname = nicknameTxt.getText();
 
-            Player player = server.login(nickname,lobbyController);
-
-
-            lobbyController.setServer(server);
-            lobbyController.setPlayer(player);
-            lobbyController.initState();
-
-            Stage lobbyStage = new Stage();
-            lobbyStage.setScene(new Scene(lobbyView));
-
-            lobbyStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            mainController.login(nickname);
+            mainController.getSceneManager().setOnCloseRequest(new EventHandler() {
                 @Override
-                public void handle(WindowEvent windowEvent) {
+                public void handle(Event event) {
                     try {
-                        server.logout(player);
-                        System.exit(0);
+                        mainController.getServer().logout(mainController.getPlayer());
                     } catch (AppException appException) {
                         appException.printStackTrace();
                     }
-
+                    System.exit(0);
                 }
             });
-
-            lobbyStage.show();
-
-            ((Node)(e.getSource())).getScene().getWindow().hide();
+            mainController.getSceneManager().setTitle(nickname);
 
         } catch (AppException appException) {
-            appException.printStackTrace();
+            errorMessage.setText(appException.getMessage());
+            errorMessage.setVisible(true);
+
+
         }
 
 
@@ -72,14 +67,15 @@ public class LoginController {
 
 
     public void initData() {
+        errorMessage.setVisible(false);
+
     }
 
-    public void setServer(IServer server) {
-        this.server = server;
-    }
 
-    public void setLobbyData(LobbyController lobbyController, Parent lobbyView) {
-        this.lobbyController = lobbyController;
-        this.lobbyView = lobbyView;
+
+
+
+    public void setMainController(MainController mainController){
+        this.mainController = mainController;
     }
 }

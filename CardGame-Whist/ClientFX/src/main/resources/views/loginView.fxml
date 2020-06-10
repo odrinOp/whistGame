@@ -4,7 +4,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-
 <AnchorPane prefHeight="265.0" prefWidth="333.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.LoginController">
    <children>
       <Label layoutX="89.0" layoutY="39.0" text="WHIST GAME">
@@ -19,5 +18,6 @@
       </Label>
       <TextField fx:id="nicknameTxt" alignment="CENTER" layoutX="92.0" layoutY="145.0" promptText="guest" />
       <Button layoutX="108.0" layoutY="205.0" mnemonicParsing="false" onAction="#login" prefHeight="26.0" prefWidth="116.0" text="Join" />
+      <Label fx:id="errorMessage" layoutX="88.0" layoutY="171.0" text="This nickname is already used" textFill="RED" />
    </children>
 </AnchorPane>
