@@ -14,5 +14,6 @@ dependencies {
 
     compile project(':Model')
     compile project(':Services')
+    compile project(':Persistance')
     compile 'org.springframework:spring-context:5.0.4.RELEASE'
 }

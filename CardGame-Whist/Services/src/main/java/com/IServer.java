@@ -1,5 +1,8 @@
 package com;
 
+
+import com.domain.Player;
+
 public interface IServer {
 
     Player login(String nickname, IClientObserver client) throws AppException;
@@ -10,8 +13,6 @@ public interface IServer {
     void startGame() throws AppException;
 
 
-
-
-
+    void sendCard(String nickname,String id);
 
 }

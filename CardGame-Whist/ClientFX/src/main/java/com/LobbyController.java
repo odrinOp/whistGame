@@ -1,8 +1,8 @@
 package com;
 
+import com.domain.Player;
 import com.dto.GameData;
 import com.dto.LobbyData;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,7 +11,7 @@ import javafx.scene.control.ListView;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class LobbyController extends UnicastRemoteObject implements IClientObserver {
+public class LobbyController {
 
 
 
@@ -33,27 +33,19 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
     public LobbyController() throws RemoteException {
     }
 
-    @Override
     public void update(GameData data) throws RemoteException {
-
-
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    if(data instanceof LobbyData){
-                    LobbyData lobbyData = (LobbyData) data;
-                    updateHost(lobbyData.getPlayers());
-                    updateReadyList(lobbyData.getPlayers());
-                    updatePendingList(lobbyData.getPlayers());
-                    updateButtons();
-                }}
-            });
+        if(data instanceof LobbyData) {
+            LobbyData lobbyData = (LobbyData) data;
+            updateHost(lobbyData.getHost());
+            updateReadyList(lobbyData.getReadyPlayers());
+            updatePendingList(lobbyData.getPendingPlayers());
+            updateButtons();
+        }
 
 
     }
 
-    private void updateHost(Player[] players) {
-        for(Player player : players)
+    private void updateHost(Player player) {
         if(player.isHost()){
             hostTxt.setText("Host: " + player.getNickname());
             if(player.equals(mainController.getPlayer())){
@@ -80,17 +72,14 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
     private void updatePendingList(Player[] players) {
         pendingList.getItems().clear();
         for(Player player: players){
-
-            if (!player.isReady())
-                pendingList.getItems().add(player.getNickname());
+            pendingList.getItems().add(player.getNickname());
         }
     }
 
     private void updateReadyList(Player[] players) {
         readyList.getItems().clear();
         for (Player player: players){
-            if(player.isReady())
-                readyList.getItems().add(player.getNickname());
+            readyList.getItems().add(player.getNickname());
         }
     }
 
@@ -113,5 +102,10 @@ public class LobbyController extends UnicastRemoteObject implements IClientObser
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @FXML
+    public void startGame(){
+        mainController.startGame();
     }
 }

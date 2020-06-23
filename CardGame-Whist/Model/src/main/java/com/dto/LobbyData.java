@@ -1,18 +1,29 @@
 package com.dto;
 
-import com.Player;
-
-import java.util.Map;
+import com.domain.Player;
 
 public class LobbyData implements GameData {
 
-    private Player[] players;
+    private Player host;
+    private Player[] readyPlayers;
+    private Player[] pendingPlayers;
 
-    public LobbyData(Player[] players) {
-        this.players = players;
+
+    public LobbyData(Player host,Player[] readyPlayers, Player[] pendingPlayers) {
+        this.host = host;
+        this.readyPlayers = readyPlayers;
+        this.pendingPlayers = pendingPlayers;
     }
 
-    public Player[] getPlayers() {
-        return players;
+    public Player[] getReadyPlayers() {
+        return readyPlayers;
+    }
+
+    public Player[] getPendingPlayers() {
+        return pendingPlayers;
+    }
+
+    public Player getHost() {
+        return host;
     }
 }

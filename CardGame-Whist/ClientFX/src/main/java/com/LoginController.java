@@ -12,6 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.io.IOException;
+
 
 public class LoginController {
 
@@ -47,7 +49,7 @@ public class LoginController {
             });
             mainController.getSceneManager().setTitle(nickname);
 
-        } catch (AppException appException) {
+        } catch (AppException | IOException appException) {
             errorMessage.setText(appException.getMessage());
             errorMessage.setVisible(true);
 

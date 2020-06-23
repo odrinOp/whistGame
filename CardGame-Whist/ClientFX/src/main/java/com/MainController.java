@@ -1,15 +1,26 @@
 package com;
 
+import com.domain.Card;
+import com.domain.Player;
 import com.dto.GameData;
 import com.dto.LobbyData;
+import com.dto.StartGameData;
 import com.utils.ApplicationState;
 import com.utils.SceneManager;
+import javafx.application.Platform;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.utils.ImageReader;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class MainController extends UnicastRemoteObject implements IClientObserver {
     private IServer server;
@@ -18,6 +29,8 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
 
     private LoginController loginController;
     private LobbyController lobbyController;
+    private GameController gameController;
+    private ImageReader reader;
 
 
 
@@ -35,18 +48,65 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
 
     @Override
     public void update(GameData data) throws RemoteException {
-        if(data instanceof LobbyData){
-            lobbyController.update(data);
-        }
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if(data instanceof LobbyData){
+                    try {
+                        lobbyController.update(data);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(data instanceof StartGameData){
+                    try {
+                        gameController.initState();
+                        sceneManager.changeActiveScene(ApplicationState.GAME);
+                        StartGameData startGameData = (StartGameData) data;
+                        Player[] players = startGameData.getPlayers();
+
+                        List<Image> back_images_opp = getBackImagesOpponent();
+
+                        gameController.initPlayersPositions(rotatePlayerList(players),back_images_opp);
+                        System.out.println(players[0].getNickname() + " will start the game");
+
+
+                    } catch (AppException appException) {
+                        appException.printStackTrace();
+                    }
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void receiveCards(List<Card> value) throws RemoteException {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Map<String , Image> cards = new HashMap<>();
+                for(Card c: value){
+                    Image img = reader.getCardImage(c.getName());
+                    cards.put(c.getName(),img);
+                }
+
+                gameController.initPlayersCards(cards);
+            }
+        });
+
     }
 
 
-    public void login(String nickname) throws AppException {
+    public void login(String nickname) throws AppException, IOException {
             ApplicationContext factory = new ClassPathXmlApplicationContext("classpath:spring-client.xml");
             server = (IServer) factory.getBean("appServer");
             this.player = server.login(nickname,this);
+            System.out.println("Name: "+ this.player.getNickname());
             this.lobbyController.initState();
             this.sceneManager.changeActiveScene(ApplicationState.LOBBY);
+            reader = new ImageReader();
     }
 
     public void markAsReady() throws AppException {
@@ -95,8 +155,64 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
         this.lobbyController = lobbyController;
     }
 
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
+    }
+
+    public void startGame() {
+        try {
+            this.server.startGame();
+
+        } catch (AppException appException) {
+            appException.printStackTrace();
+        }
+
+    }
 
 
+    private List<Player> rotatePlayerList(Player[] players){
+        List<Player> rotatedPlayers = new LinkedList<>();
+        //get the index of player:
+        int index = -1;
+        for(int i =0;i < players.length; i++){
+            if(players[i].getNickname().equals(this.player.getNickname())) {
+                index = i;
+                break;
+            }
+        }
+
+        rotatedPlayers.add(players[index]);
+        index +=1;
+        if(index == players.length)
+            index = 0;
+        //copying elements to the new list
+        while(!players[index].getNickname().equals(this.player.getNickname())){
+            rotatedPlayers.add(players[index]);
+            index+=1;
+            if(index == players.length)
+                index = 0;
+        }
+
+        return rotatedPlayers;
+
+    }
 
 
+    private List<Image> getBackImagesOpponent(){
+        List<Image> images = new LinkedList<>();
+        String img_name = "back-";
+        for(int i=1;i<=6;i++){
+            images.add(reader.getCardImage(img_name + i));
+        }
+
+        return images;
+    }
+
+    public void sendCard(String id) {
+        //server.sendCard(id);
+    }
 }

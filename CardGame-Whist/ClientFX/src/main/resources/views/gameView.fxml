@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.GameController">
+  <children>
+    <ImageView fitHeight="400.0" fitWidth="608.0" layoutX="-7.0" layoutY="0.0" pickOnBounds="true" preserveRatio="false">
+      <image>
+        <Image url="@../images/bg1.png" />
+      </image>
+    </ImageView>
+    <HBox fx:id="playerGUI" alignment="CENTER" layoutX="113.0" layoutY="326.0" prefHeight="74.0" prefWidth="360.0" />
+    <ImageView fx:id="opGUI1" fitHeight="67.66666030883789" fitWidth="101.49999252278755" layoutX="5.0" layoutY="166.0" pickOnBounds="true" preserveRatio="true" rotate="90.0">
+      <image>
+        <Image url="@../images/1-back%20(1).png" />
+      </image>
+    </ImageView>
+    <ImageView fx:id="opGUI3" fitHeight="67.66666030883789" fitWidth="101.49999252278755" layoutX="456.0" layoutY="166.0" pickOnBounds="true" preserveRatio="true" rotate="270.0">
+      <image>
+        <Image url="@../images/1-back%20(1).png" />
+      </image>
+    </ImageView>
+    <ImageView id="opGU2" fx:id="opGUI2" fitHeight="67.66666030883789" fitWidth="101.49999252278755" layoutX="220.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+      <image>
+        <Image url="@../images/1-back%20(1).png" />
+      </image>
+    </ImageView>
+    <Label fx:id="opName1" layoutX="21.0" layoutY="121.0" text="Label" />
+    <Label fx:id="opName2" layoutX="163.0" layoutY="28.0" text="Label" />
+    <Label fx:id="opName3" layoutX="507.0" layoutY="251.0" text="Label" />
+    <Button layoutX="516.0" layoutY="14.0" mnemonicParsing="false" text="Score" />
+    <Button layoutX="511.0" layoutY="350.0" mnemonicParsing="false" text="Submit" />
+  </children>
+</AnchorPane>

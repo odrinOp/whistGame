@@ -13,7 +13,7 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <Button fx:id="startBtn" layoutX="274.0" layoutY="318.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="79.0" style="-fx-background-color: green;" text="Start" textFill="WHITE">
+      <Button fx:id="startBtn" layoutX="274.0" layoutY="318.0" onAction="#startGame" mnemonicParsing="false" prefHeight="30.0" prefWidth="79.0" style="-fx-background-color: green;" text="Start" textFill="WHITE">
          <font>
             <Font size="14.0" />
          </font>

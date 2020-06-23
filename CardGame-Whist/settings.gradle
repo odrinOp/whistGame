@@ -4,4 +4,6 @@ include 'Persistance'
 include 'Services'
 include 'Server'
 include 'ClientFX'
+//include 'Testing'
+include 'Test'
 
