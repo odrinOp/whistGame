@@ -60,8 +60,16 @@ public class GameLoop implements Runnable {
             }
             */
             //waiting for biddings
+            Map<String ,Integer> bidsByPlayers = new HashMap<>();
             for (Player p : players) {
-                int bid = server.getBid(p.getNickname());
+                int bid = 0;
+                try {
+                    bid = server.getBid(p.getNickname(), bidUnavailableValue(bidsByPlayers,noCards));
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                int i = 0;
                 while (bid == -1) {
                     try {
                         Thread.sleep(1000);
@@ -69,9 +77,17 @@ public class GameLoop implements Runnable {
                         e.printStackTrace();
                         return;
                     }
-                    bid = server.getBid(p.getNickname());
+                    try {
+                        bid = server.getBid(p.getNickname(), bidUnavailableValue(bidsByPlayers, noCards));
+                        System.out.println("Waiting for player: " + p.getNickname() + " to send bid!Try: " + i);
+                        i+=1;
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 }
                 score.updateData(round,p.getNickname(),"bid",bid);
+                bidsByPlayers.put(p.getNickname(),bid);
+                server.sendBidsInfo(bidsByPlayers);
             }
 
 
@@ -129,6 +145,20 @@ public class GameLoop implements Runnable {
 
     }
 
+    private int bidUnavailableValue(Map<String, Integer> bidsByPlayers, int noCards) {
+        if(bidsByPlayers.size() != players.size() -1)
+            return -1;
+
+        int total_bids = 0;
+        for(Integer bid: bidsByPlayers.values()){
+            total_bids += bid;
+            if(total_bids > noCards)
+                return -1;
+        }
+
+        return noCards - total_bids;
+    }
+
     private List<Player> setNewOrder(List<Player> players, String playerName) {
         while (!players.get(0).getNickname().equals(playerName)){
             Player p = players.get(0);
@@ -173,7 +203,7 @@ public class GameLoop implements Runnable {
     }
 
     private boolean cardStringIsValid(String playerCard) {
-        return !playerCard.equals("undifined");
+        return playerCard != null;
     }
 
 

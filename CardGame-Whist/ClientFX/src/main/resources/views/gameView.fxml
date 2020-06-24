@@ -4,6 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="com.GameController">
   <children>
@@ -28,10 +30,27 @@
         <Image url="@../images/1-back%20(1).png" />
       </image>
     </ImageView>
-    <Label fx:id="opName1" layoutX="21.0" layoutY="121.0" text="Label" />
-    <Label fx:id="opName2" layoutX="163.0" layoutY="28.0" text="Label" />
-    <Label fx:id="opName3" layoutX="507.0" layoutY="251.0" text="Label" />
+    <Label fx:id="opName1" layoutX="14.0" layoutY="108.0" text="Label">
+      <font>
+        <Font name="System Bold" size="17.0" fx:id="x1" />
+      </font>
+    </Label>
+    <Label fx:id="opName2" font="$x1" layoutX="165.0" layoutY="25.0" text="Label" />
+    <Label fx:id="opName3" font="$x1" layoutX="516.0" layoutY="125.0" text="Label" />
     <Button layoutX="516.0" layoutY="14.0" mnemonicParsing="false" text="Score" />
-    <Button layoutX="511.0" layoutY="350.0" mnemonicParsing="false" text="Submit" />
+    <Button fx:id="submitBid" layoutX="511.0" layoutY="350.0" mnemonicParsing="false" onAction="#submitBidResponse" text="Submit" />
+    <TextField fx:id="bidsTxt" layoutX="511.0" layoutY="318.0" prefWidth="73.0" />
+    <Label id="bidsTxt" fx:id="bidsLabel" layoutX="530.0" layoutY="298.0" text="Bids" />
+    <Label fx:id="opScore2" layoutX="133.0" layoutY="22.0" text="0/0">
+      <font>
+        <Font name="System Bold" size="20.0" fx:id="x2" />
+      </font>
+      <textFill>
+        <Color blue="0.000" green="0.960" red="1.000" fx:id="x3" />
+      </textFill>
+    </Label>
+    <Label id="op" fx:id="opScore1" font="$x2" layoutX="20.0" layoutY="125.0" text="0/0" textFill="#fff733" />
+    <Label fx:id="playerScore" font="$x2" layoutX="20.0" layoutY="348.0" text="0/0" textFill="#fff966" />
+    <Label fx:id="opScore3" font="$x2" layoutX="522.0" layoutY="99.0" text="0/0" textFill="$x3" />
   </children>
 </AnchorPane>

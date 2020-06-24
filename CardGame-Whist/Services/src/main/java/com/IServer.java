@@ -15,4 +15,5 @@ public interface IServer {
 
     void sendCard(String nickname,String id);
 
+    void sendBid(int bid);
 }

@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 public interface IClientObserver extends Serializable, Remote {
 
@@ -22,4 +23,9 @@ public interface IClientObserver extends Serializable, Remote {
     void receiveCards(List<Card> cards) throws RemoteException;
 
 
+    void kick(String s)throws RemoteException;
+
+    void getBidRequest(int unavailableBid) throws RemoteException;
+
+    void updateBidsInfo(Map<String, Integer> bidsByPlayers) throws RemoteException;
 }

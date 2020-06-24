@@ -32,6 +32,9 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
     private GameController gameController;
     private ImageReader reader;
 
+    private boolean bidRequest = false;
+    private int bidUnavailable = -1;
+
 
 
 
@@ -96,6 +99,30 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
             }
         });
 
+    }
+
+    @Override
+    public void kick(String s) {
+        System.out.println(s);
+        System.exit(0);
+    }
+
+    @Override
+    public void getBidRequest(int unavailableBid) throws RemoteException {
+
+        if(bidRequest == false){
+            bidRequest = true;
+            gameController.showBidGui();
+            this.bidUnavailable = unavailableBid;
+        }
+
+    }
+
+    @Override
+    public void updateBidsInfo(Map<String, Integer> bidsByPlayers) throws RemoteException {
+        Platform.runLater(()->{
+            gameController.setBids(bidsByPlayers);
+        });
     }
 
 
@@ -214,5 +241,17 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
 
     public void sendCard(String id) {
         //server.sendCard(id);
+    }
+
+    public void sendBid(int bid) {
+        if(bidUnavailable == bid)
+        {
+            System.out.println("You can't bid " + bid + "!");
+            return;
+        }
+        server.sendBid(bid);
+        bidRequest = false;
+        gameController.hideBidGUI();
+        gameController.setBidStatus(bid);
     }
 }

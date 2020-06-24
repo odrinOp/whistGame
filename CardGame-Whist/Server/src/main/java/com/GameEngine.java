@@ -2,7 +2,6 @@ package com;
 
 
 import com.domain.Card;
-import com.domain.Deck;
 import com.domain.Player;
 import com.dto.GameData;
 import com.dto.LobbyData;
@@ -11,12 +10,10 @@ import com.repositories.GameRepoMock;
 import com.repositories.IGameRepository;
 import com.repositories.RepositoryException;
 import com.utils.GameState;
-import com.utils.PlayerCardsDTO;
 import javafx.util.Pair;
 
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -235,6 +232,11 @@ public class GameEngine implements IServer {
 
     }
 
+    @Override
+    public void sendBid(int bid) {
+        bid_received = bid;
+    }
+
 
     public void sendCards(String nickname, List<Card> player_cards) throws RemoteException {
         IClientObserver localClient = gameRepository.getPlayerObserver(new Player(nickname));
@@ -242,10 +244,28 @@ public class GameEngine implements IServer {
             localClient.receiveCards(player_cards);
     }
 
+    public void kick(Player p){
+        IClientObserver localClient = gameRepository.getPlayerObserver(p);
+        try {
+            localClient.kick("A player disconnected from server.The game is over!");
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public int getBid(String nickname) {
-        //sending info to the player
-        return bid_received;
+
+    public int getBid(String nickname, int unavailableBid) throws RemoteException {
+
+        if(bid_received == -1) {
+
+            IClientObserver localClient = gameRepository.getPlayerObserver(new Player(nickname));
+            localClient.getBidRequest(unavailableBid);
+            return bid_received;
+        }
+        int bid = bid_received;
+        bid_received = -1;
+        return bid;
+
     }
 
     public String getPlayerCard(String nickname) {
@@ -265,5 +285,18 @@ public class GameEngine implements IServer {
         //sending to players the score for the round;
         //this message will make the client to clear GUI
         //maybe here we are gonna send multiple messages(ex. roundInfo)
+    }
+
+    public void sendBidsInfo(Map<String, Integer> bidsByPlayers) {
+        for(Player p: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(p);
+            executor.execute(()->{
+                try {
+                    localClient.updateBidsInfo(bidsByPlayers);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 }
