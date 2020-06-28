@@ -10,11 +10,15 @@ import com.utils.SceneManager;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.utils.ImageReader;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -35,7 +39,7 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
     private boolean bidRequest = false;
     private int bidUnavailable = -1;
 
-
+    private boolean cardRequest = false;
 
 
 
@@ -125,15 +129,142 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
         });
     }
 
+    @Override
+    public void requestCard(String firstCard, String atuCard) throws RemoteException {
+        if (cardRequest == false) {
+            cardRequest = true;
+            gameController.updateCardsGUI(firstCard, atuCard);
+        }
+    }
 
-    public void login(String nickname) throws AppException, IOException {
-            ApplicationContext factory = new ClassPathXmlApplicationContext("classpath:spring-client.xml");
+    @Override
+    public void sendCardsOnTable(List<Pair<String, Card>> players_cards) throws RemoteException {
+        Image player_cardImage = null;
+        HashMap<String,Image> opp_cardImage = new HashMap<>();
+        for(Pair<String,Card> player_cards : players_cards){
+            String name = player_cards.getKey();
+            String cardName = player_cards.getValue().getName();
+
+            if(name.equals(player.getNickname())){
+                player_cardImage = reader.getCardImage(cardName);
+            }
+            else{
+                Image oppCardImage = reader.getCardImage(cardName);
+                opp_cardImage.put(name,oppCardImage);
+            }
+        }
+
+        gameController.setPlayerCard(player_cardImage);
+        gameController.setOpponentsCards(opp_cardImage);
+        gameController.disableCards();
+    }
+
+    @Override
+    public void sendPlayersBalance(Map<String, Pair<Integer, Integer>> playersScore) throws RemoteException {
+        Platform.runLater(()->
+        {
+            Pair<Integer,Integer> playerScore = new Pair<>(0,0);
+            Map<String,Pair<Integer,Integer>> opponentScore = new HashMap<>();
+
+            for(Map.Entry<String,Pair<Integer,Integer>> entry: playersScore.entrySet()){
+                if(entry.getKey().equals(player.getNickname()))
+                    playerScore = entry.getValue();
+                else{
+                    opponentScore.put(entry.getKey(),entry.getValue());
+                }
+            }
+
+            gameController.setScoreForPlayer(playerScore);
+            gameController.setScoreForOpponents(opponentScore);
+            gameController.clearTable();
+        });
+
+
+    }
+
+    @Override
+    public void resetRound() throws RemoteException {
+        Platform.runLater(()->{
+            gameController.resetPlayerScore();
+            gameController.resetOpponentScore();
+            gameController.updateAtuImage(null);
+        });
+
+    }
+
+    @Override
+    public void updateAtu(String atuString) throws RemoteException {
+        Platform.runLater(()->{
+            System.out.println(atuString);
+            Image atuImage = reader.getCardImage(atuString);
+            gameController.updateAtuImage(atuImage);
+        });
+    }
+
+    @Override
+    public void updateTotalScore(Map<String, Integer> playersScore) throws RemoteException {
+        Platform.runLater(()->{
+            Map<String,Integer> oppTotal = new HashMap<>();
+            int playerTotal = 0;
+
+            for(Map.Entry<String,Integer> total: playersScore.entrySet()){
+                if(total.getKey().equals(player.getNickname()))
+                    playerTotal = total.getValue();
+                else
+                    oppTotal.put(total.getKey(),total.getValue());
+            }
+
+
+            gameController.updatePlayerTotal(playerTotal);
+            gameController.updateOppTotal(oppTotal);
+        });
+
+
+
+    }
+
+
+    public void login(String nickname,String ipAddr,String port) throws AppException, IOException {
+
+            configureXMLFile(ipAddr,port);
+            System.out.println(InetAddress.getByName("localhost"));
+            ApplicationContext factory = null;
+            try {
+                factory = new ClassPathXmlApplicationContext("classpath:spring-client.xml");
+                System.out.println(InetAddress.getByName("localhost"));
+            }catch (BeanCreationException e){
+                throw new AppException("There is no server on this IP Address or port! Try again!");
+            }
             server = (IServer) factory.getBean("appServer");
             this.player = server.login(nickname,this);
             System.out.println("Name: "+ this.player.getNickname());
             this.lobbyController.initState();
             this.sceneManager.changeActiveScene(ApplicationState.LOBBY);
             reader = new ImageReader();
+    }
+
+    private void configureXMLFile(String ipAddr, String port) {
+
+        String xmlFile = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "\n" +
+                "<beans xmlns=\"http://www.springframework.org/schema/beans\"\n" +
+                "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "       xsi:schemaLocation=\"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd\">\n" +
+                "\n" +
+                "    <bean id=\"appServer\" class=\"org.springframework.remoting.rmi.RmiProxyFactoryBean\"><property name=\"serviceUrl\" value=\"rmi://" + ipAddr + ":" + port + "/WhistGame\"/><property name=\"serviceInterface\" value=\"com.IServer\"/>\n" +
+                "    </bean>\n" +
+                "\n" +
+                "</beans>";
+
+        try {
+            FileWriter writer = new FileWriter("C:\\GitProjects\\whistGame\\CardGame-Whist\\ClientFX\\src\\main\\resources\\spring-client.xml");
+            writer.write(xmlFile);
+            System.out.println("Configuration Done!");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void markAsReady() throws AppException {
@@ -240,7 +371,8 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
     }
 
     public void sendCard(String id) {
-        //server.sendCard(id);
+        server.sendCard(player.getNickname(),id);
+        cardRequest = false;
     }
 
     public void sendBid(int bid) {
@@ -252,6 +384,9 @@ public class MainController extends UnicastRemoteObject implements IClientObserv
         server.sendBid(bid);
         bidRequest = false;
         gameController.hideBidGUI();
-        gameController.setBidStatus(bid);
+        gameController.setBid(bid);
+
+        gameController.setBidStatus();
     }
+
 }

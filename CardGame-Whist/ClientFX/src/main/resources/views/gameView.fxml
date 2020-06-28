@@ -25,23 +25,22 @@
         <Image url="@../images/1-back%20(1).png" />
       </image>
     </ImageView>
-    <ImageView id="opGU2" fx:id="opGUI2" fitHeight="67.66666030883789" fitWidth="101.49999252278755" layoutX="220.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+    <ImageView id="opGU2" fx:id="opGUI2" fitHeight="67.66666030883789" fitWidth="101.49999252278755" layoutX="229.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
       <image>
         <Image url="@../images/1-back%20(1).png" />
       </image>
     </ImageView>
-    <Label fx:id="opName1" layoutX="14.0" layoutY="108.0" text="Label">
+    <Label fx:id="opName1" layoutX="0.0" layoutY="187.0" rotate="90.0" text="Label">
       <font>
         <Font name="System Bold" size="17.0" fx:id="x1" />
       </font>
     </Label>
-    <Label fx:id="opName2" font="$x1" layoutX="165.0" layoutY="25.0" text="Label" />
-    <Label fx:id="opName3" font="$x1" layoutX="516.0" layoutY="125.0" text="Label" />
-    <Button layoutX="516.0" layoutY="14.0" mnemonicParsing="false" text="Score" />
-    <Button fx:id="submitBid" layoutX="511.0" layoutY="350.0" mnemonicParsing="false" onAction="#submitBidResponse" text="Submit" />
-    <TextField fx:id="bidsTxt" layoutX="511.0" layoutY="318.0" prefWidth="73.0" />
-    <Label id="bidsTxt" fx:id="bidsLabel" layoutX="530.0" layoutY="298.0" text="Bids" />
-    <Label fx:id="opScore2" layoutX="133.0" layoutY="22.0" text="0/0">
+    <Label fx:id="opName2" font="$x1" layoutX="260.0" layoutY="5.0" text="Label" />
+    <Label fx:id="opName3" font="$x1" layoutX="546.0" layoutY="189.0" rotate="270.0" text="Label" />
+    <Button fx:id="submitBid" layoutX="511.0" layoutY="361.0" mnemonicParsing="false" onAction="#submitBidResponse" text="Submit" />
+    <TextField fx:id="bidsTxt" layoutX="511.0" layoutY="329.0" prefWidth="73.0" />
+    <Label id="bidsTxt" fx:id="bidsLabel" layoutX="530.0" layoutY="309.0" text="Bids" />
+    <Label fx:id="opScore2" layoutX="197.0" layoutY="22.0" text="0/0">
       <font>
         <Font name="System Bold" size="20.0" fx:id="x2" />
       </font>
@@ -49,8 +48,37 @@
         <Color blue="0.000" green="0.960" red="1.000" fx:id="x3" />
       </textFill>
     </Label>
-    <Label id="op" fx:id="opScore1" font="$x2" layoutX="20.0" layoutY="125.0" text="0/0" textFill="#fff733" />
-    <Label fx:id="playerScore" font="$x2" layoutX="20.0" layoutY="348.0" text="0/0" textFill="#fff966" />
+    <Label id="op" fx:id="opScore1" font="$x2" layoutX="22.0" layoutY="132.0" text="0/0" textFill="#fff733" />
+    <Label fx:id="playerScore" font="$x2" layoutX="20.0" layoutY="359.0" text="0/0" textFill="#fff966" />
     <Label fx:id="opScore3" font="$x2" layoutX="522.0" layoutY="99.0" text="0/0" textFill="$x3" />
+    <ImageView fx:id="atuCard" fitHeight="69.95353418147" fitWidth="47.000030517578125" layoutX="256.0" layoutY="165.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+        <Image url="@../images/just_a_card.png" />
+      </image>
+    </ImageView>
+    <ImageView fx:id="playerCard" fitHeight="60.0" fitWidth="40.3125" layoutX="257.0" layoutY="254.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+        <Image url="@../images/just_a_card.png" />
+      </image>
+    </ImageView>
+    <ImageView fx:id="opCard2" fitHeight="60.0" fitWidth="40.3125" layoutX="260.0" layoutY="83.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+      <image>
+        <Image url="@../images/just_a_card.png" />
+      </image>
+    </ImageView>
+    <ImageView fx:id="opCard1" fitHeight="60.0" fitWidth="40.3125" layoutX="99.0" layoutY="170.0" pickOnBounds="true" preserveRatio="true" rotate="90.0">
+      <image>
+        <Image url="@../images/just_a_card.png" />
+      </image>
+    </ImageView>
+    <ImageView fx:id="opCard3" fitHeight="60.0" fitWidth="40.3125" layoutX="423.0" layoutY="170.0" pickOnBounds="true" preserveRatio="true" rotate="270.0">
+      <image>
+        <Image url="@../images/just_a_card.png" />
+      </image>
+    </ImageView>
+    <Label id="opName2" fx:id="opTotal2" font="$x1" layoutX="341.0" layoutY="26.0" text="Score:0" />
+    <Label id="opName2" fx:id="opTotal3" font="$x1" layoutX="511.0" layoutY="243.0" text="Score:0" />
+    <Label id="opName2" fx:id="opTotal1" font="$x1" layoutX="0.0" layoutY="239.0" text="Score:0" />
+    <Label id="opName2" fx:id="playerTotal" font="$x1" layoutX="7.0" layoutY="336.0" text="Score:0" />
   </children>
 </AnchorPane>

@@ -6,4 +6,4 @@ include 'Server'
 include 'ClientFX'
 //include 'Testing'
 include 'Test'
-
+include ':ClientAndroid'

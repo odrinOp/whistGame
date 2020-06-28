@@ -29,13 +29,16 @@ public class LoginController {
     private Label errorMessage;
 
     @FXML
+    private TextField ipAddr,port;
+
+    @FXML
     void login(ActionEvent e){
         try {
             initData();
             validateData();
             String nickname = nicknameTxt.getText();
 
-            mainController.login(nickname);
+            mainController.login(nickname,ipAddr.getText(),port.getText());
             mainController.getSceneManager().setOnCloseRequest(new EventHandler() {
                 @Override
                 public void handle(Event event) {

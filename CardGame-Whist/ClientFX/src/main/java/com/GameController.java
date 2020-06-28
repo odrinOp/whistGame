@@ -1,11 +1,9 @@
 package com;
 
 import com.domain.Player;
-import com.utils.ImageReader;
 import com.utils.OpponentGUIController;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -13,7 +11,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.util.Pair;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +31,23 @@ public class GameController {
             opName3,
             opScore1,
             opScore2,
-            opScore3;
+            opScore3,
+            opTotal1,
+            opTotal2,
+            opTotal3;
+
+    @FXML
+    private ImageView opCard1,
+            opCard2,
+            opCard3,
+            playerCard,
+            atuCard;
 
 
 
     @FXML private HBox playerGUI;
     @FXML private Label playerScore;
+    @FXML private Label playerTotal;
 
     @FXML private Label bidsLabel;
     @FXML private TextField bidsTxt;
@@ -50,7 +61,7 @@ public class GameController {
     private List<OpponentGUIController> oppControllers;
 
     private int bid=0,made=0;
-
+    private int score = 0;
     //private GraphicsContext gc;
 
     public GameController() {
@@ -61,7 +72,10 @@ public class GameController {
     }
 
     public void initState(){
+        bid = made = score = 0;
         hideBidGUI();
+        playerCard.setImage(null);
+        atuCard.setImage(null);
     }
 
 
@@ -76,6 +90,8 @@ public class GameController {
             playerGUI.getChildren().remove(img);
             String id = img.getId();
             mainController.sendCard(id);
+
+            isYourTurn = false;
         }
     );
 
@@ -89,9 +105,9 @@ public class GameController {
         if(players.size() != 4)
             return;
 
-        opp1 = createOppGUI(back_images_opp,opName1,opGUI1,opScore1);
-        opp2 = createOppGUI(back_images_opp,opName2,opGUI2,opScore2);
-        opp3 = createOppGUI(back_images_opp,opName3,opGUI3,opScore3);
+        opp1 = createOppGUI(back_images_opp,opName1,opGUI1,opScore1,opCard1,opTotal1);
+        opp2 = createOppGUI(back_images_opp,opName2,opGUI2,opScore2,opCard2,opTotal2);
+        opp3 = createOppGUI(back_images_opp,opName3,opGUI3,opScore3,opCard3,opTotal3);
 
         //setting the name
         opp1.getName().setText(players.get(1).getNickname());
@@ -110,6 +126,8 @@ public class GameController {
 
         for(Map.Entry<String,Image> card: cards.entrySet()){
             ImageView view = createCardView(card);
+            view.setOpacity(0.4);
+            view.setDisable(true);
             playerGUI.getChildren().add(view);
         }
 
@@ -120,8 +138,8 @@ public class GameController {
         opp3.setNumCards(number_of_cards);
     }
 
-    private OpponentGUIController createOppGUI(List<Image> images, Label name, ImageView view,Label score){
-        OpponentGUIController op =  new OpponentGUIController(name,view,score);
+    private OpponentGUIController createOppGUI(List<Image> images, Label name, ImageView view, Label score, ImageView card,Label total){
+        OpponentGUIController op =  new OpponentGUIController(name,view,score,card,total);
         op.setImages(images);
         return op;
     }
@@ -152,12 +170,17 @@ public class GameController {
     private void submitBidResponse(){
 
         bid = Integer.parseInt(bidsTxt.getText());
-        mainController.sendBid(bid);
+        if(bid <= getNoCards())
+            mainController.sendBid(bid);
 
 
     }
 
-    public void setBidStatus(int bid) {
+    private int getNoCards() {
+        return playerGUI.getChildren().size();
+    }
+
+    public void setBidStatus() {
         playerScore.setText(made + "/" + bid);
         if(made == bid)
             playerScore.setTextFill(Color.web("#fff966"));
@@ -173,6 +196,167 @@ public class GameController {
 
             int bid = bidsByPlayers.get(name);
             opponent.setBids(bid);
+            opponent.updateScore();
+        }
+    }
+
+    public void updateCardsGUI(String firstCard, String atuCard) {
+        //daca firstCard == null; atunci putem pune orice carte
+        //daca firstCard!=null; atunci putem pune doar cartile de tipul respectiv, sau doar cartile de atu; si daca nu avem, atunci putem pune orice;
+
+        isYourTurn = true;
+        if(firstCard == null) {
+            makeCardsAvailable(null);
+            return;
+        }
+
+        int firstCardType = getCardsType(firstCard);
+        if(firstCardType != 0){
+            makeCardsAvailable(firstCard);
+            return;
+        }
+        if(atuCard == null){
+            makeCardsAvailable(null);
+            return;
+        }
+        int atuCardType = getCardsType(atuCard);
+        if(atuCardType != 0){
+            makeCardsAvailable(atuCard);
+            return;
+        }
+
+        makeCardsAvailable(null);
+
+
+    }
+
+    private void makeCardsAvailable(String firstCard) {
+        String type = null;
+
+        if (firstCard != null)
+            type = firstCard.split("-")[0];
+        for (Node node : playerGUI.getChildren()) {
+            if (node instanceof ImageView) {
+                ImageView card = (ImageView) node;
+                String cardType = card.getId().split("-")[0];
+                if(type == null)
+                {
+                    card.setOpacity(1);
+                    card.setDisable(false);
+                    continue;
+                }
+                if(type.equals(cardType)){
+                    card.setOpacity(1);
+                    card.setDisable(false);
+                }
+                else{
+                    card.setOpacity(0.4);
+                    card.setDisable(true);
+                }
+
+            }
+        }
+    }
+
+    private int getCardsType(String firstCard) {
+        System.out.println(firstCard);
+        String cardType = firstCard.split("-")[0];
+        int count = 0;
+        for (Node node: playerGUI.getChildren()){
+            if(node instanceof ImageView){
+                ImageView card = (ImageView) node;
+
+                String type = card.getId().split("-")[0];
+                if(type.equals(cardType))
+                    count += 1;
+            }
+        }
+        return count;
+    }
+
+    public void setPlayerCard(Image player_cardImage) {
+        playerCard.setImage(player_cardImage);
+    }
+
+    public void setOpponentsCards(HashMap<String, Image> opp_cardImage) {
+        for(OpponentGUIController oppCtrl: oppControllers){
+            if(opp_cardImage.get(oppCtrl.getPlayerName()) != null){
+                Image cardImage = opp_cardImage.get(oppCtrl.getPlayerName());
+                oppCtrl.setCard(cardImage);
+            }
+            else
+            {
+                oppCtrl.setCard(null);
+            }
+        }
+    }
+
+    public void setScoreForPlayer(Pair<Integer, Integer> playerScore) {
+        made = playerScore.getValue();
+        bid = playerScore.getKey();
+        setBidStatus();
+    }
+
+    public void setScoreForOpponents(Map<String, Pair<Integer, Integer>> opponentScore) {
+        for(OpponentGUIController opp: oppControllers){
+            Pair<Integer,Integer> score = opponentScore.get(opp.getPlayerName());
+            if(score == null)
+                continue;
+
+            opp.setMade(score.getValue());
+            opp.setBids(score.getKey());
+            opp.updateScore();
+        }
+    }
+
+    public void clearTable() {
+        playerCard.setImage(null);
+        for(OpponentGUIController opp: oppControllers){
+            opp.setCard(null);
+            opp.setNumCards(opp.getNumCards() - 1);
+        }
+    }
+
+    public void setBid(int bid) {
+        this.bid = bid;
+    }
+
+    public void disableCards() {
+        for(Node node: playerGUI.getChildren()){
+            if(node instanceof ImageView){
+                ImageView cardView = (ImageView) node;
+                cardView.setDisable(true);
+                cardView.setOpacity(0.4);
+            }
+        }
+    }
+
+    public void resetPlayerScore() {
+        bid = 0;
+        made = 0;
+        setBidStatus();
+    }
+
+    public void resetOpponentScore() {
+        for(OpponentGUIController opp: oppControllers){
+            opp.setMade(0);
+            opp.setBids(0);
+            opp.updateScore();
+        }
+    }
+
+    public void updateAtuImage(Image atuImage) {
+        atuCard.setImage(atuImage);
+    }
+
+    public void updatePlayerTotal(int playerTotal) {
+        this.playerTotal.setText("Score:"+playerTotal);
+    }
+
+    public void updateOppTotal(Map<String, Integer> oppTotal) {
+        for(OpponentGUIController ctrl: oppControllers){
+            int total = oppTotal.get(ctrl.getName());
+            ctrl.updateTotal(total);
         }
     }
 }

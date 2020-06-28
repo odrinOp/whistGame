@@ -11,6 +11,9 @@ import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class StartClient extends Application {
     @Override
     public void start(Stage stage) throws Exception {
@@ -66,6 +69,41 @@ public class StartClient extends Application {
 
 
     public static void main(String[] args) {
+
         launch(args);
+        //writeToXmlFile();
+    }
+
+
+    private static void writeToXmlFile(){
+        String ipAddress = "192.0.0.1";
+        String port = "1234";
+        String value = ipAddress + ":" + port;
+        String propertyURL = "<property name=\"serviceUrl\" value=\"rmi://" + value + "/WhistGame\"/>";
+
+
+        String finalString = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "\n" +
+                "<beans xmlns=\"http://www.springframework.org/schema/beans\"\n" +
+                "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "       xsi:schemaLocation=\"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd\">\n" +
+                "\n" +
+                "    <bean id=\"appServer\" class=\"org.springframework.remoting.rmi.RmiProxyFactoryBean\">";
+
+        finalString += propertyURL;
+
+        finalString += "<property name=\"serviceInterface\" value=\"com.IServer\"/>\n" +
+                "    </bean>\n" +
+                "\n" +
+                "</beans>";
+
+
+        try {
+            FileWriter writer = new FileWriter("C:\\GitProjects\\whistGame\\CardGame-Whist\\ClientFX\\src\\main\\resources\\spring-client.xml");
+            writer.write(finalString);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

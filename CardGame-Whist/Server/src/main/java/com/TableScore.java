@@ -30,7 +30,7 @@ public class TableScore {
         for(RowData data: rows){
             if(data.equals(localData))
             {
-                if(type.equals("bids"))
+                if(type.equals("bid"))
                 {
                     data.setBids(value);
                     return;
@@ -48,9 +48,9 @@ public class TableScore {
     public int getScore(int round,String name){
         for(RowData data: rows){
             if(data.equals(new RowData(round,name))){
-                int score = Math.abs(data.bids-data.made);
+                int score = -1 * Math.abs(data.bids-data.made);
                 if(data.bids == -1 || data.made == -1)
-                    return -1;
+                    return 1000;
                 if(score == 0)
                     score = 5 + data.bids;
 
@@ -61,11 +61,11 @@ public class TableScore {
     }
 
     public int calculateTotalScore(String name){
-        int score = -1;
+        int score = 0;
         for(RowData data: rows){
             if(data.getPlayer().equals(name)){
                 int round_score = getScore(data.getRound(),name);
-                if(round_score != -1)
+                if(round_score != 1000)
                     score += round_score;
             }
         }

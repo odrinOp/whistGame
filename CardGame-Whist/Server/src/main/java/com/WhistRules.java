@@ -10,31 +10,49 @@ public class WhistRules {
         Card winningCard = null;
         String winningPlayer ="none";
         for(Pair<String ,Card> pair : players_cards){
-            if (winningCard == null)
-            {
+            if(winningCard == null){
                 winningCard = pair.getValue();
                 winningPlayer = pair.getKey();
                 continue;
             }
+
             Card c = pair.getValue();
-            String playerName = pair.getKey();
-            if (atu == null){ // round of 8
-                if(winningCard.getType().equals(c.getType()) && winningCard.getValue() < c.getValue()) {
+            String p = pair.getKey();
+
+            if(atu == null){
+                if(c.getType().equals(winningCard.getType()) && c.getValue() > winningCard.getValue())
+                {
                     winningCard = c;
-                    winningPlayer = playerName;
+                    winningPlayer = p;
+                    continue;
                 }
             }
             else{
-                if(c.getType().equals(atu.getType()) && !winningCard.getType().equals(atu.getType())){
-                    winningCard = c;
-                    winningPlayer = playerName;
+                if (c.getType().equals(atu.getType()) && winningCard.getType().equals(atu.getType())){
+                    if(c.getValue() > winningCard.getValue())
+                    {
+                        winningCard = c;
+                        winningPlayer = p;
+                        continue;
+                    }
                 }
-                else if(winningCard.getType().equals(c.getType()) && winningCard.getValue() < c.getValue()) {
+                else if(c.getType().equals(atu.getType()) && !winningCard.getType().equals(atu.getType())){
                     winningCard = c;
-                    winningPlayer = playerName;
+                    winningPlayer = p;
+                    continue;
+                }
+
+                else if(!c.getType().equals(atu.getType()) && c.getType().equals(winningCard.getType())){
+                    if(c.getValue() > winningCard.getValue())
+                    {
+                        winningCard = c;
+                        winningPlayer = p;
+                        continue;
+                    }
                 }
 
             }
+
         }
         return winningPlayer;
     }

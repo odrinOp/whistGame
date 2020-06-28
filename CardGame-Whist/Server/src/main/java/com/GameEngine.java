@@ -229,7 +229,7 @@ public class GameEngine implements IServer {
     //major changes here
     @Override
     public void sendCard(String nickname, String id) {
-
+        card_received = id;
     }
 
     @Override
@@ -268,23 +268,68 @@ public class GameEngine implements IServer {
 
     }
 
-    public String getPlayerCard(String nickname) {
+    public String getPlayerCard(String nickname, String firstCard, String atuCard) throws RemoteException {
+        if(card_received == null){
+            IClientObserver localClient = gameRepository.getPlayerObserver(new Player(nickname));
+            localClient.requestCard(firstCard,atuCard);
+            return card_received;
+        }
         //sending info to the player
-        return card_received;
+        String card = card_received;
+        card_received = null;
+        return card;
     }
 
     public void sendGameStatus(List<Pair<String, Card>> players_cards) {
-        //sending all the cards putted on the table to the players;
+        for(Player player: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(player);
+
+            executor.execute(()->{
+                try {
+                    localClient.sendCardsOnTable(players_cards);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            });
+        }
     }
 
     public void notifyPlayersAboutBalance(Map<String, Pair<Integer, Integer>> playersScore) {
-        //sending to players the balance between bids and made for each participant
+        for(Map.Entry<String ,Pair<Integer,Integer>> playerData: playersScore.entrySet()){
+            System.out.println("Player: " + playerData.getKey() + "\t\t" +
+                    "Bid: " + playerData.getValue().getKey() + "\t\t" +
+                    "Made: " + playerData.getValue().getValue());
+        }
+
+        for(Player player: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(player);
+
+            executor.execute(()->{
+                try {
+                    localClient.sendPlayersBalance(playersScore);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            });
+        }
     }
 
     public void notifyPlayersAboutRound(Map<String, Integer> playerScore) {
         //sending to players the score for the round;
         //this message will make the client to clear GUI
         //maybe here we are gonna send multiple messages(ex. roundInfo)
+        for(Player p: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(p);
+            executor.execute(()->{
+                try {
+                    localClient.resetRound();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 
     public void sendBidsInfo(Map<String, Integer> bidsByPlayers) {
@@ -293,6 +338,35 @@ public class GameEngine implements IServer {
             executor.execute(()->{
                 try {
                     localClient.updateBidsInfo(bidsByPlayers);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    public void sendAtuCard(Card atu) {
+        String atuString = atu.getName();
+        for(Player p: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(p);
+            executor.execute(()->
+            {
+                try {
+                    localClient.updateAtu(atuString);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+    }
+
+    public void sendTotalScore(Map<String, Integer> playersScore) {
+        for(Player p: gameRepository.getActivePlayers()){
+            IClientObserver localClient = gameRepository.getPlayerObserver(p);
+            executor.execute(()->{
+                try {
+                    localClient.updateTotalScore(playersScore);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

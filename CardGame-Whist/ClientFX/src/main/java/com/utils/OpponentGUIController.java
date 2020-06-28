@@ -12,17 +12,23 @@ public class OpponentGUIController {
     ImageView cards_displayed;
     int no_of_cards;
     Label score;
+    Label totalScore;
     int bids=0,made=0;
+    int total = 0;
+    private ImageView card;
 
     // the corresponding image will be: no_of_cards - 1;
     List<Image> back_cards_images;
 
 
 
-    public OpponentGUIController(Label name, ImageView cards_displayed,Label score) {
+    public OpponentGUIController(Label name, ImageView cards_displayed,Label score,ImageView card,Label totalScore) {
         this.name = name;
         this.cards_displayed = cards_displayed;
         this.score = score;
+        this.card = card;
+        this.totalScore = totalScore;
+        this.card.setImage(null);
     }
 
     public void setImages(List<Image> images){
@@ -48,28 +54,44 @@ public class OpponentGUIController {
         return name;
     }
     public void setBids(int bids){
-        made = 0;
+        //made = 0;
         this.bids = bids;
 
-        score.setText(made + "/"+bids);
-        if(bids == made)
-            score.setTextFill(Color.web("#fff966"));
-        else
-            score.setTextFill(Color.web("#ff3333"));
     }
 
     public String getPlayerName(){
         return name.getText();
     }
 
-    public void incrementMade(){
-        made += 1;
+    public void setMade(int made){
+        this.made = made;
+
+    }
+
+    public void updateScore(){
         score.setText(made + "/" + bids);
         if(bids == made)
             score.setTextFill(Color.web("#fff966"));
         else
             score.setTextFill(Color.web("#ff3333"));
+
+
+    }
+
+    public void setCard(Image cardImage){
+        if(cardImage == null) {
+            this.card.setImage(cardImage);
+            no_of_cards -=1;
+            setNumCards(no_of_cards);
+        }
     }
 
 
+    public int getNumCards() {
+        return no_of_cards;
+    }
+
+    public void updateTotal(int total) {
+        totalScore.setText("Score:"+total);
+    }
 }

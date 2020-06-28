@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="351.0" prefWidth="386.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.FX.ServerController">
+  <children>
+    <Label layoutX="47.0" layoutY="24.0" text="Whist Game Private Server">
+      <font>
+        <Font size="25.0" />
+      </font>
+    </Label>
+    <Label layoutX="67.0" layoutY="108.0" text="IP Address:">
+      <font>
+        <Font size="20.0" fx:id="x1" />
+      </font>
+    </Label>
+    <Label font="$x1" layoutX="116.0" layoutY="152.0" minHeight="18.0" prefHeight="27.0" prefWidth="56.0" text="Port:" wrapText="false" />
+    <TextField fx:id="ipAddr" alignment="CENTER" disable="true" editable="false" layoutX="185.0" layoutY="108.0" prefWidth="133.0" text="localhost" />
+    <TextField fx:id="port" alignment="CENTER" layoutX="185.0" layoutY="153.0" prefWidth="133.0" text="1099" />
+    <Button fx:id="openBtn" font="$x1" layoutX="147.0" layoutY="262.0" mnemonicParsing="false" onAction="#onRun" text="Open" />
+    <Label layoutX="61.0" layoutY="195.0" text="SERVER STATUS:" />
+    <Label layoutX="62.0" layoutY="221.0" text="GAME STATUS:" />
+    <Label fx:id="serverStatus" layoutX="270.0" layoutY="195.0" text="OPEN" />
+    <Label fx:id="gameStatus" layoutX="270.0" layoutY="221.0" text="ACTIVE" />
+  </children>
+</AnchorPane>

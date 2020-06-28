@@ -3,6 +3,7 @@ package com;
 import com.domain.Card;
 import com.domain.Deck;
 import com.domain.Player;
+import com.repositories.RoundRepository;
 import javafx.util.Pair;
 
 import java.rmi.RemoteException;
@@ -13,15 +14,15 @@ public class GameLoop implements Runnable {
     private Deck deck;
     private List<Player> players;
     private GameEngine server;
-    private int round = 1;
-    private int max_round = 2;
-    private int noCards = 4;
+
     private TableScore score;
     private WhistRules gameRules;
+    private RoundRepository rounds;
 
     public GameLoop(List<Player> players) {
         this.players = players;
         gameRules = new WhistRules();
+        rounds = new RoundRepository(players.size());
     }
 
 
@@ -36,14 +37,20 @@ public class GameLoop implements Runnable {
         //init variables for the game
         deck = new Deck(players.size() * 8);
         score = new TableScore();
-        round = 1; // todo: Create a RoundRepo
-        noCards = 8;// this will be available in RoundRepo
+        int noCards = 0;
+        rounds.startIterator();
 
+        String atuCard = null;
         //starting the actual game; this will run until all rounds are completed
-        while(round < max_round) {
+        while(rounds.valid()) {
+            atuCard = null;
             deck.shuffle();
+            noCards = rounds.getNoCards();
+            int id = rounds.getID();
             //draw and send cards for the players
             for (Player p : players) {
+                score.addRow(id,p.getNickname());
+                System.out.println("Send cards to: " + p.getNickname());
                 List<Card> player_cards = deck.drawCards(noCards);
                 try {
                     server.sendCards(p.getNickname(), player_cards);
@@ -53,16 +60,26 @@ public class GameLoop implements Runnable {
                 }
             }
             //todo: add ATU Card
-            /*
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             Card atu = null;
             if(noCards < 8){
                 atu =  deck.drawCards(1).get(0);
+                atuCard = atu.getName();
+                System.out.println("Atu will be: " + atu.getType());
+                server.sendAtuCard(atu);
             }
-            */
+
+
+
             //waiting for biddings
             Map<String ,Integer> bidsByPlayers = new HashMap<>();
             for (Player p : players) {
                 int bid = 0;
+                System.out.println("Waiting for " + p.getNickname() + " to send bid!");
                 try {
                     bid = server.getBid(p.getNickname(), bidUnavailableValue(bidsByPlayers,noCards));
                 } catch (RemoteException e) {
@@ -79,69 +96,105 @@ public class GameLoop implements Runnable {
                     }
                     try {
                         bid = server.getBid(p.getNickname(), bidUnavailableValue(bidsByPlayers, noCards));
-                        System.out.println("Waiting for player: " + p.getNickname() + " to send bid!Try: " + i);
+
                         i+=1;
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
                 }
-                score.updateData(round,p.getNickname(),"bid",bid);
+                System.out.println("Player " + p.getNickname() + " send bid=" + bid );
+                score.updateData(id,p.getNickname(),"bid",bid);
                 bidsByPlayers.put(p.getNickname(),bid);
                 server.sendBidsInfo(bidsByPlayers);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
 
-            List<Player> copyPlayerList = players;
+            List<Player> copyPlayerList = new LinkedList<>(players);
 
             //the round will be completed when all players remain without cards
             while (noCards > 0){
                 List<Pair<String ,Card >> players_cards = new LinkedList<>();
-
+                String firstCard = null;
                 //wainting for players to send a card
                 for(Player p: copyPlayerList){
-                    String playerCard = server.getPlayerCard(p.getNickname());
+                    String playerCard = null;
+                    int i = 1;
+                    System.out.println("Waiting for player " + p.getNickname() + " to send card");
                     while (cardStringIsValid(playerCard))
                     {
                         try {
+                            //System.out.println("Waiting for player " + p.getNickname() + " to send a card!Try: " + i);
                             Thread.sleep(1000);
-                            playerCard = server.getPlayerCard(p.getNickname());
-                        } catch (InterruptedException e) {
+                            playerCard = server.getPlayerCard(p.getNickname(), firstCard, atuCard);
+                            i+=1;
+                        } catch (InterruptedException | RemoteException e) {
                             e.printStackTrace();
                             return;
                         }
-                        playerCard = server.getPlayerCard(p.getNickname());
                     }
-
+                    if(firstCard == null)
+                        firstCard = playerCard;
+                    System.out.println("Player " + p.getNickname() + " send card=" + playerCard);
                     Card c = convertToCard(playerCard);
                     players_cards.add(new Pair<>(p.getNickname(),c));
 
                     //sending the cards to the players
                     server.sendGameStatus(players_cards);
                 }
-
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 //decide who wins the hand
-                String playerName = gameRules.getWinningPlayer(players_cards,null);
-
+                String playerName = gameRules.getWinningPlayer(players_cards,atu);
+                System.out.println("Player " + playerName +" won the hand!");
                 //update the score for the winner; made = made + 1
-                score.updateData(round,playerName,"made",score.getMade(round,playerName) + 1);
+                score.updateData(id,playerName,"made",score.getMade(id,playerName) + 1);
 
                 //notify all players about the balance for each opponent; balance = bids/made
-                server.notifyPlayersAboutBalance(getPlayersBalance(round));
+
+                server.notifyPlayersAboutBalance(getPlayersBalance(id));
 
                 //the winner will start the next hand
                 copyPlayerList = setNewOrder(copyPlayerList,playerName);
                 noCards -=1;
+
             }
 
             Map<String,Integer> playerScore = getPlayersScore();
             //setting the new order for the next round; first player will be the last
             players = setNewOrder(players, players.get(1).getNickname());
             //notify players about score for them and for their opponent
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             server.notifyPlayersAboutRound(playerScore);
 
             //remaking the deck to his initial state
+
+            System.out.println("Round " + id +" finished!Score: ");
+            Map<String,Integer> playersScore = new HashMap<>();
+            for(Player p: players){
+                int s = score.calculateTotalScore(p.getNickname());
+                playerScore.put(p.getNickname(),s);
+                System.out.println("Player: " + p.getNickname() + "\t\tScore: " + s);
+            }
+
+            server.sendTotalScore(playersScore);
             deck.remakeDeck();
+            rounds.next();
         }
+
+        System.out.println("Game has ended!");
+
 
     }
 
@@ -203,7 +256,7 @@ public class GameLoop implements Runnable {
     }
 
     private boolean cardStringIsValid(String playerCard) {
-        return playerCard != null;
+        return playerCard == null;
     }
 
 
